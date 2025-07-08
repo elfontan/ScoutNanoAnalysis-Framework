@@ -48,8 +48,8 @@ print("-------------------------------------------------------------------------
 # Extract reclustered fat jets collection
 jets = events["ScoutingFatPFJetRecluster"]
 
-# Select jets with pT > 30 GeV and |eta| < 3
-mask = (jets.pt > 30) & (abs(jets.eta) < 3)
+# Select jets with pT > 20 GeV and |eta| < 5
+mask = (jets.pt > 20) & (abs(jets.eta) < 5)
 selected_jets = jets[mask]
 n_goodjets = ak.num(selected_jets)
 sel = n_goodjets >= 2
@@ -64,8 +64,8 @@ print(f"Events with at least two jets: {ak.sum(sel)}")
 jet1 = selected_jets[:, 0]
 jet2 = selected_jets[:, 1]
 
-print("-------------------------------> Leading Jet Pt = ", jet1.pt)
-print(type(jet1.pt), ak.type(jet1.pt))
+#print("-------> Leading Jet Pt = ", jet1.pt)
+#print(type(jet1.pt), ak.type(jet1.pt))
 
 jet1_pt = jet1.pt.compute()
 jet2_pt = jet2.pt.compute()
@@ -88,13 +88,13 @@ detajj = abs(jet1_eta - jet2_eta)
 hists = {
     "pt1":   hist.Hist.new.Reg(50, 0, 500, name="pt", label="Leading jet pT [GeV]").Double(),
     "pt2":   hist.Hist.new.Reg(50, 0, 500, name="pt", label="Subleading jet pT [GeV]").Double(),
-    "eta1":  hist.Hist.new.Reg(50, -3, 3, name="eta", label="Leading jet eta").Double(),
-    "eta2":  hist.Hist.new.Reg(50, -3, 3, name="eta", label="Subleading jet eta").Double(),
+    "eta1":  hist.Hist.new.Reg(50, -5, 5, name="eta", label="Leading jet eta").Double(),
+    "eta2":  hist.Hist.new.Reg(50, -5, 5, name="eta", label="Subleading jet eta").Double(),
     "phi1":  hist.Hist.new.Reg(64, -3.2, 3.2, name="phi", label="Leading jet phi").Double(),
     "phi2":  hist.Hist.new.Reg(64, -3.2, 3.2, name="phi", label="Subleading jet phi").Double(),
     "njet":  hist.Hist.new.Reg(10, -0.5, 9.5, name="n", label="N good jets").Double(),
-    "mjj":   hist.Hist.new.Reg(80, 0, 2000, name="mjj", label="m_{jj} [GeV]").Double(),
-    "detajj":   hist.Hist.new.Reg(50, 0, 6, name="detajj", label="Delta#Eta_{jj}").Double()
+    "mjj":   hist.Hist.new.Reg(80, 0, 2000, name="mjj", label="mjj [GeV]").Double(),
+    "detajj":   hist.Hist.new.Reg(50, 0, 6, name="detajj", label="DEta(jj)").Double()
 }
 
 
@@ -109,14 +109,15 @@ hists["mjj"].fill(mjj=ak.to_numpy(mjj))
 hists["detajj"].fill(detajj=ak.to_numpy(detajj))
 
 
-# Save individual CMS-style plots
 for key, h in hists.items():
-    fig, ax = plt.subplots(figsize=(8, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     mplhep.histplot(h, ax=ax)
-    mplhep.cms.label("Preliminary", data=True, com="13.6 TeV", ax=ax, loc=0, fontsize=24)
-    ax.set_title(key, fontsize=22)
+    mplhep.cms.label("Preliminary", data=True, com="13.6", ax=ax, loc=0, fontsize=23)
+    ax.set_xlabel(h.axes[0].label, fontsize=22)
+    ax.set_ylabel("Events", fontsize=22)
+    ax.set_title("")  
+    ax.tick_params(axis='both', which='major', labelsize=16)    
     plt.tight_layout()
     plt.savefig(f"{outdir}/{key}.png")
     plt.savefig(f"{outdir}/{key}.pdf")
     plt.close()
-
